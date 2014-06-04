@@ -128,6 +128,22 @@ var constants = {
     pairfieldcolor: '#333333',
     misscolor: '#EE3333'
 };
+function drawLines(e) {
+    e.preventDefault();
+    if (lastPt != null) {
+        ctx.beginPath();
+        ctx.moveTo(lastPt.x, lastPt.y);
+        ctx.lineTo(e.touches[0].pageX, e.touches[0].pageY);
+        ctx.stroke();
+    }
+    lastPt = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+}
+
+function endLines(e) {
+    e.preventDefault();
+    // Terminate touch path
+    lastPt = null;
+}
 
 
 function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
@@ -190,6 +206,8 @@ function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
         });
         
     }, true);
+    canvas.addEventListener("touchmove", drawLines, false);
+    canvas.addEventListener("touchend", endLines, false);
     canvas.addEventListener('mouseup', function (e) {
         self.dragging = false;
         var done = true;
