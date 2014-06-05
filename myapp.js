@@ -180,20 +180,24 @@ function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
 
 MyCanvas.prototype.drawtouchmove = function (e) {
     e.preventDefault();
+    var mouse = e.touches[0];//this.getMouse(e.touches[0]);
     var lastPt = this.lastPt;
     if (lastPt != null) {
-        ctx.beginPath();
-        ctx.moveTo(lastPt.x, lastPt.y);
-        ctx.lineTo(e.touches[0].pageX, e.touches[0].pageY);
-        ctx.stroke();
+        this.ctx.strokeStyle = '#ffaa0';
+        this.ctx.fillStyle = '#AA00FF';
+        this.ctx.lineWidth = 15;
+        this.ctx.beginPath();
+        this.ctx.moveTo(lastPt.x, lastPt.y);
+        this.ctx.lineTo(mouse.pageX, mouse.pageY);
+        this.ctx.stroke();
     }
-    lastPt = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+    this.lastPt = { x: mouse.pageX, y: mouse.pageY };
 };
 
 MyCanvas.prototype.drawtouchend = function (e) {
     e.preventDefault();
     // Terminate touch path
-    lastPt = null;
+    this.lastPt = null;
 };
 
 
@@ -362,7 +366,7 @@ function MyApp() {
     this.canvas.height = this.rectNum * this.rectSize;
     this.mycanvashandler = new MyCanvas(this.canvas,
         this.ctx,
-        200,
+        400,
         this.rectNum,
         this.rectSize,
         JSON.parse(letters.A));
