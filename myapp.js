@@ -128,22 +128,7 @@ var constants = {
     pairfieldcolor: '#333333',
     misscolor: '#EE3333'
 };
-function drawLines(e) {
-    e.preventDefault();
-    if (lastPt != null) {
-        ctx.beginPath();
-        ctx.moveTo(lastPt.x, lastPt.y);
-        ctx.lineTo(e.touches[0].pageX, e.touches[0].pageY);
-        ctx.stroke();
-    }
-    lastPt = { x: e.touches[0].pageX, y: e.touches[0].pageY };
-}
 
-function endLines(e) {
-    e.preventDefault();
-    // Terminate touch path
-    lastPt = null;
-}
 
 
 function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
@@ -161,6 +146,7 @@ function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
         rectNum: rectNum
     });
     this.generateShapes();
+    this.lastPt = null;
 
     // This complicates things a little but but fixes mouse co-ordinate problems
     // when there's a border or padding. See getMouse for more detail
@@ -176,95 +162,120 @@ function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
 
     var self = this;
 
-    self.infomessage = new Message({
+    this.infomessage = new Message({
         message: "Nacrtaj ovo slovo: ",
         showtime: 5
     });
 
-    canvas.addEventListener('mousedown', function (e) {
-        var mouse = self.getMouse(e);
-        var x = Math.floor(mouse.x / self.rectSize);
-        var y = Math.floor(mouse.y / self.rectSize);
-
-        if (x >= 0 && x < self.rectNum && y >= 0 && y < self.rectNum) {
-
-            var selectedRect = self.shapes[y + x * self.rectNum];
-            // in case of right click delete cell
-            if (e.which === 3 || e.button === 2) {
-                selectedRect.fill = self.background.getcolor(x, y);
-                e.preventDefault();
-                e.preventBubble = true;
-                return false;
-            } else {
-                selectedRect.fill = constants.clickcolor;
-            }
-            self.dragging = true;
-        }
-        self.infomessage = new Message({
-            message: "",
-            showtime: 0
-        });
-        
-    }, true);
-    canvas.addEventListener("touchmove", drawLines, false);
-    canvas.addEventListener("touchend", endLines, false);
-    canvas.addEventListener('mouseup', function (e) {
-        self.dragging = false;
-        var done = true;
-        var miss = 0;
-        var bgletter = self.background.letter;
-        if (bgletter !== null) {
-            for (var i = 0; i < bgletter.length; i++) {
-                var cellColor = self.shapes[i].fill;
-                if (bgletter[i].fill !== cellColor) {
-                    if (bgletter[i].fill !== constants.lettercolor) {
-                        self.shapes[i].fill = constants.misscolor;
-                        miss++;
-                    }
-                } else if (bgletter[i].fill === constants.lettercolor) {
-                    done = false;
-                }
-            }
-        }
-
-        if (done) {
-            if (miss > 0 && miss < 6) {
-                document.getElementById("messages").innerHTML = "BRAVO! Ali promašio si nekoliko polja: " + miss;
-                self.infomessage = new Message({
-                    message: "heart" + miss,
-                    showtime: 20
-                });
-            } else {
-                document.getElementById("messages").innerHTML = "BRAVO!!!!!";
-                self.infomessage = new Message({
-                    message: "bravo",
-                    showtime: 20,
-                    font: "40pt Helvetica"
-                });
-            }
-            //this.reset();
-        } else {
-            document.getElementById("messages").innerHTML = "Prati zelenu boju!";
-            self.infomessage = new Message({
-                message: "heart",
-                showtime: 20
-            });
-        }
-    }, true);
-
-    canvas.addEventListener('mousemove', function (e) {
-        if (self.dragging) {
-            var mouse = self.getMouse(e);
-            var x = Math.floor(mouse.x / self.rectSize);
-            var y = Math.floor(mouse.y / self.rectSize);
-            if (x >= 0 && x < self.rectNum && y >= 0 && y < self.rectNum) {
-                var selectedRect = self.shapes[y + x * self.rectNum];
-                selectedRect.fill = constants.clickcolor;
-            }
-        }
-    }, true);
+    canvas.addEventListener('mousedown', function (event) { self.drawmousedown(event); }, true);
+    canvas.addEventListener("touchmove", function (event) { self.drawtouchmove(event); }, false);
+    canvas.addEventListener("touchend", function (event) { self.drawtouchend(event); }, false);
+    canvas.addEventListener('mouseup', function (event) { self.drawmouseup(event); }, true);
+    canvas.addEventListener('mousemove', function (event) { self.drawmousemove(event); }, true);
     setInterval(function () { self.drawShapes(self.ctx); }, self.interval);
     //(self.drawShapes(self.ctx));
+}
+
+
+
+MyCanvas.prototype.drawtouchmove = function (e) {
+    e.preventDefault();
+    var lastPt = this.lastPt;
+    if (lastPt != null) {
+        ctx.beginPath();
+        ctx.moveTo(lastPt.x, lastPt.y);
+        ctx.lineTo(e.touches[0].pageX, e.touches[0].pageY);
+        ctx.stroke();
+    }
+    lastPt = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+};
+
+MyCanvas.prototype.drawtouchend = function (e) {
+    e.preventDefault();
+    // Terminate touch path
+    lastPt = null;
+};
+
+
+MyCanvas.prototype.drawmousedown = function (e) {
+    var mouse = this.getMouse(e);
+    var x = Math.floor(mouse.x / this.rectSize);
+    var y = Math.floor(mouse.y / this.rectSize);
+
+    if (x >= 0 && x < this.rectNum && y >= 0 && y < this.rectNum) {
+
+        var selectedRect = this.shapes[y + x * this.rectNum];
+        // in case of right click delete cell
+        if (e.which === 3 || e.button === 2) {
+            selectedRect.fill = this.background.getcolor(x, y);
+            e.preventDefault();
+            e.preventBubble = true;
+            return false;
+        } else {
+            selectedRect.fill = constants.clickcolor;
+        }
+        this.dragging = true;
+    }
+    this.infomessage = new Message({
+        message: "",
+        showtime: 0
+    });
+};
+
+MyCanvas.prototype.drawmouseup = function (e) {
+    this.dragging = false;
+    var done = true;
+    var miss = 0;
+    var bgletter = this.background.letter;
+    if (bgletter !== null) {
+        for (var i = 0; i < bgletter.length; i++) {
+            var cellColor = this.shapes[i].fill;
+            if (bgletter[i].fill !== cellColor) {
+                if (bgletter[i].fill !== constants.lettercolor) {
+                    this.shapes[i].fill = constants.misscolor;
+                    miss++;
+                }
+            } else if (bgletter[i].fill === constants.lettercolor) {
+                done = false;
+            }
+        }
+    }
+
+    if (done) {
+        if (miss > 0 && miss < 6) {
+            document.getElementById("messages").innerHTML = "BRAVO! Ali promašio si nekoliko polja: " + miss;
+            this.infomessage = new Message({
+                message: "heart" + miss,
+                showtime: 20
+            });
+        } else {
+            document.getElementById("messages").innerHTML = "BRAVO!!!!!";
+            this.infomessage = new Message({
+                message: "bravo",
+                showtime: 20,
+                font: "40pt Helvetica"
+            });
+        }
+        //this.reset();
+    } else {
+        document.getElementById("messages").innerHTML = "Prati zelenu boju!";
+        this.infomessage = new Message({
+            message: "heart",
+            showtime: 20
+        });
+    }
+};
+
+MyCanvas.prototype.drawmousemove = function (e) {
+    if (this.dragging) {
+        var mouse = this.getMouse(e);
+        var x = Math.floor(mouse.x / this.rectSize);
+        var y = Math.floor(mouse.y / this.rectSize);
+        if (x >= 0 && x < this.rectNum && y >= 0 && y < this.rectNum) {
+            var selectedRect = this.shapes[y + x * this.rectNum];
+            selectedRect.fill = constants.clickcolor;
+        }
+    }
 }
 
 // Creates an object with x and y defined, set to the mouse position relative to the state's canvas
@@ -303,7 +314,7 @@ MyCanvas.prototype.drawShapes = function () {
         //    shape.x + shape.w < 0 || shape.y + shape.h < 0) continue;
         shapes[i].draw(this.ctx);
     }
-    if (this.infomessage !=  null && this.infomessage.message) {
+    if (this.infomessage != null && this.infomessage.message) {
         this.infomessage.draw(this.ctx);
     }
 };
