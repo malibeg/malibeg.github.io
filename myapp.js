@@ -43,7 +43,7 @@ function Message(obj) {
     this.fill = "#FFFFFF";
     this.showtime = 0;
     this.decrement = 1;
-    this.font = "200% Helvetica";
+    this.font = "150% Helvetica";
     this.textAlign = "center";
     this.textBaseline = "middle";
     // IF AN OBJECT WAS PASSED THEN INITIALISE PROPERTIES FROM THAT OBJECT
@@ -229,6 +229,7 @@ MyCanvas.prototype.setcellcolor = function (cell, index) {
                 showtime: 10,
                 fill: '#FF0000'
             });
+            playthetune('audioctrl2', 'mp3src', 'mistake1.mp3');
         }
     } else {
         cell.fill = constants.clickcolor;
@@ -297,6 +298,7 @@ MyCanvas.prototype.movefinished = function () {
                 message: "heart" + miss,
                 showtime: 15
             });
+            playthetune('audioctrl2', 'mp3src', 'bravo2.mp3');
         } else {
             document.getElementById("messages").innerHTML = "BRAVO!!!!!";
             this.infomessage = new Message({
@@ -304,6 +306,7 @@ MyCanvas.prototype.movefinished = function () {
                 showtime: 15,
                 font: "200% Helvetica"
             });
+            playthetune('audioctrl2', 'mp3src', 'bravo1.mp3');
         }
         this.reset(false);
     } else if (this.infomessage.message !== 'greška') { // initialize with below code at beggining to get rid from if statement
@@ -311,6 +314,7 @@ MyCanvas.prototype.movefinished = function () {
             message: "heart",
             showtime: 10
         });
+        playthetune('audioctrl2', 'mp3src', 'mistake2.mp3');
     }
 }
 
@@ -408,9 +412,9 @@ function MyApp(width, hight) {
     this.rectSize = 60;
     if (width !== 0 && hight !== 0) {
         if (width > hight) {
-            this.rectSize = Math.floor(hight / (this.rectNum + 1));
+            this.rectSize = Math.floor(hight / (this.rectNum + 2));
         } else {
-            this.rectSize = Math.floor(width / (this.rectNum + 1));
+            this.rectSize = Math.floor(width / (this.rectNum + 2));
         }
     }
 
@@ -463,14 +467,11 @@ MyApp.prototype.exportDrawing = function () {
 };
 
 
-var thgameapp = {};
-
 function init() {
     var w = window.innerWidth || 0;
     var h = window.innerHeight || 0;
     thegameapp = new MyApp(w, h);
     var audiocontrol = document.getElementById('audioctrl');
-    audiocontrol.load();
     audiocontrol.play();
 };
 
@@ -482,17 +483,19 @@ function exportDrawing() {
     thegameapp.exportDrawing();
 };
 
+function playthetune(control, element, sound) {
+    var audioelem = document.getElementById(element);
+    var path = 'slova/' + sound;
+    audioelem.src = path;
+    var audiocontrol = document.getElementById(control);
+    audiocontrol.load();
+    audiocontrol.play();
+}
+
 function letterChanged(value) {
     var letter = JSON.parse(letters[value]);
     thegameapp.letterChanged(letter);
-    var audioelem = document.getElementById('audioslovo');
-    var path = 'slova/' + value + '1.mp3';
-    audioelem.src = path;
-    var audiocontrol = document.getElementById('audioctrl');
-    audiocontrol.load();
-    audiocontrol.play();
-    //var audio = new Audio(path);
-    //audio.play();
+    playthetune('audioctrl', 'audioslovo', value + '1.mp3');
 };
 
 var letters = {
