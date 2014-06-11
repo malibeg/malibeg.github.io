@@ -192,10 +192,17 @@ function MyCanvas(canvas, context, interval, rectNum, rectSize, currLeter) {
     canvas.addEventListener('mouseup', function (event) { self.drawmouseup(event); }, true);
     canvas.addEventListener('mousemove', function (event) { self.drawmousemove(event); }, true);
     setInterval(function () { self.drawShapes(self.ctx); }, self.interval);
-    //(self.drawShapes(self.ctx));
 }
 
-
+// this sohould be seperate class
+MyCanvas.prototype.playthetune = function (control, element, sound) {
+    var audioelem = document.getElementById(element);
+    var path = 'slova/' + sound;
+    audioelem.src = path;
+    var audiocontrol = document.getElementById(control);
+    audiocontrol.load();
+    audiocontrol.play();
+}
 
 MyCanvas.prototype.drawtouchmove = function (e) {
     e.preventDefault();
@@ -229,7 +236,7 @@ MyCanvas.prototype.setcellcolor = function (cell, index) {
                 showtime: 10,
                 fill: '#FF0000'
             });
-            playthetune('audioctrl2', 'mp3src', 'mistake1.mp3');
+            this.playthetune('audioctrl2', 'mp3src', 'mistake1.mp3');
         }
     } else {
         cell.fill = constants.clickcolor;
@@ -298,7 +305,7 @@ MyCanvas.prototype.movefinished = function () {
                 message: "heart" + miss,
                 showtime: 15
             });
-            playthetune('audioctrl2', 'mp3src', 'bravo2.mp3');
+            this.playthetune('audioctrl2', 'mp3src', 'bravo2.mp3');
         } else {
             document.getElementById("messages").innerHTML = "BRAVO!!!!!";
             this.infomessage = new Message({
@@ -306,7 +313,7 @@ MyCanvas.prototype.movefinished = function () {
                 showtime: 15,
                 font: "200% Helvetica"
             });
-            playthetune('audioctrl2', 'mp3src', 'bravo1.mp3');
+            this.playthetune('audioctrl2', 'mp3src', 'bravo1.mp3');
         }
         this.reset(false);
     } else if (this.infomessage.message !== 'greška') { // initialize with below code at beggining to get rid from if statement
@@ -314,7 +321,7 @@ MyCanvas.prototype.movefinished = function () {
             message: "heart",
             showtime: 10
         });
-        playthetune('audioctrl2', 'mp3src', 'mistake2.mp3');
+        this.playthetune('audioctrl2', 'mp3src', 'mistake2.mp3');
     }
 }
 
@@ -427,6 +434,8 @@ function MyApp(width, hight) {
         this.rectNum,
         this.rectSize,
         JSON.parse(letters.A));
+    var audiocontrol = document.getElementById('audioctrl');
+    audiocontrol.play();
 }
 
 MyApp.prototype.reset = function (clear) {
@@ -437,7 +446,7 @@ MyApp.prototype.letterChanged = function (letter) {
     // add setter for current letter TODO
     this.mycanvashandler.currLetter = letter;
     this.mycanvashandler.background.letter = letter;
-
+    this.mycanvashandler.playthetune('audioctrl', 'audioslovo', value + '1.mp3');
     this.reset();
 };
 
@@ -471,8 +480,6 @@ function init() {
     var w = window.innerWidth || 0;
     var h = window.innerHeight || 0;
     thegameapp = new MyApp(w, h);
-    var audiocontrol = document.getElementById('audioctrl');
-    audiocontrol.play();
 };
 
 function reset(clear) {
@@ -483,19 +490,9 @@ function exportDrawing() {
     thegameapp.exportDrawing();
 };
 
-function playthetune(control, element, sound) {
-    var audioelem = document.getElementById(element);
-    var path = 'slova/' + sound;
-    audioelem.src = path;
-    var audiocontrol = document.getElementById(control);
-    audiocontrol.load();
-    audiocontrol.play();
-}
-
 function letterChanged(value) {
     var letter = JSON.parse(letters[value]);
     thegameapp.letterChanged(letter);
-    playthetune('audioctrl', 'audioslovo', value + '1.mp3');
 };
 
 var letters = {
