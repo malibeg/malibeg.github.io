@@ -8,11 +8,11 @@
 if (typeof String.prototype.startsWith != 'function') {
     // see below for better implementation!
     String.prototype.startsWith = function (str) {
-        return this.indexOf(str) == 0;
+        return this.indexOf(str) === 0;
     };
 }
 
-
+var LettGame = LettGame || {};
 /// RECTANGLE OBJECT
 
 // Constructor for Rectangle objects to hold data for all drawn objects.
@@ -442,11 +442,11 @@ MyApp.prototype.reset = function (clear) {
     this.mycanvashandler.reset(clear);
 };
 
-MyApp.prototype.letterChanged = function (letter) {
+MyApp.prototype.letterChanged = function (letter, lettergrid) {
     // add setter for current letter TODO
-    this.mycanvashandler.currLetter = letter;
-    this.mycanvashandler.background.letter = letter;
-    this.mycanvashandler.playthetune('audioctrl', 'audioslovo', value + '1.mp3');
+    this.mycanvashandler.currLetter = lettergrid;
+    this.mycanvashandler.background.letter = lettergrid;
+    this.mycanvashandler.playthetune('audioctrl', 'audioslovo', letter + '1.mp3');
     this.reset();
 };
 
@@ -492,7 +492,7 @@ function exportDrawing() {
 
 function letterChanged(value) {
     var letter = JSON.parse(letters[value]);
-    thegameapp.letterChanged(letter);
+    thegameapp.letterChanged(value, letter);
 };
 
 var letters = {
