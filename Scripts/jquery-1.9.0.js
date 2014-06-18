@@ -3708,7 +3708,7 @@ var i,
 	tokenCache = createCache(),
 	compilerCache = createCache(),
 
-	// General-purpose constants
+	// General-purpose LetterGame.constants
 	strundefined = typeof undefined,
 	MAX_NEGATIVE = 1 << 31,
 
